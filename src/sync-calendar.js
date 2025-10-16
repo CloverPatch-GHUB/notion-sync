@@ -13,7 +13,7 @@ const auth = new google.auth.GoogleAuth({
   keyFile: process.env.GOOGLE_APPLICATION_CREDENTIALS,
   scopes: ['https://www.googleapis.com/auth/calendar'],
   clientOptions: {
-    subject: 'rav@threeleafclover.us', // Domain-wide delegation - impersonate this user
+    subject: 'rav@threeleafclover.us',
   },
 });
 
@@ -39,8 +39,11 @@ async function createCalendarEvent(notionPage) {
   const title = properties['Event Name']?.title[0]?.plain_text || 'Untitled Event';
   const description = properties['Description']?.rich_text[0]?.plain_text || '';
   const location = properties['Location']?.rich_text[0]?.plain_text || '';
-  const startTime = properties['Date & Time']?.date?.start;
-  const endTime = properties['Date & Time']?.date?.end;
+  const dateInfo = properties['Date & Time']?.date;
+  
+  if (!dateInfo || !dateInfo.start) {
+    throw new Error('Date & Time is required');
+  }
 
   console.log(`Creating calendar event: ${title}`);
 
@@ -48,22 +51,47 @@ async function createCalendarEvent(notionPage) {
     summary: title,
     description: description,
     location: location,
-    start: {
-      dateTime: startTime,
-      timeZone: 'America/Los_Angeles',
-    },
-    end: {
-      dateTime: endTime || startTime,
-      timeZone: 'America/Los_Angeles',
-    },
   };
+
+  // Check if this is an all-day event or has specific time
+  const hasTime = dateInfo.start.includes('T');
+  
+  if (hasTime) {
+    // Event with specific time
+    event.start = {
+      dateTime: dateInfo.start,
+      timeZone: 'America/Los_Angeles',
+    };
+    event.end = {
+      dateTime: dateInfo.end || dateInfo.start,
+      timeZone: 'America/Los_Angeles',
+    };
+  } else {
+    // All-day event (no time specified)
+    event.start = {
+      date: dateInfo.start.split('T')[0], // Just the date part
+    };
+    
+    if (dateInfo.end) {
+      event.end = {
+        date: dateInfo.end.split('T')[0],
+      };
+    } else {
+      // Single day event - end date is next day for Google Calendar
+      const nextDay = new Date(dateInfo.start);
+      nextDay.setDate(nextDay.getDate() + 1);
+      event.end = {
+        date: nextDay.toISOString().split('T')[0],
+      };
+    }
+  }
 
   const calendarResponse = await calendar.events.insert({
     calendarId: CALENDAR_ID,
     requestBody: event,
   });
 
-  console.log(`Created: ${title} (Calendar ID: ${calendarResponse.data.id})`);
+  console.log(`Created: ${title} (Calendar ID: ${calendarResponse.data.id}, Type: ${hasTime ? 'Timed' : 'All-day'})`);
   return calendarResponse.data.id;
 }
 
