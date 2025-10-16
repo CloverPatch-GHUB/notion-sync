@@ -1,0 +1,32 @@
+name: Nag About Incomplete Events
+
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+jobs:
+  nag:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Install dependencies
+        run: npm install
+        
+      - name: Run nagging check
+        env:
+          NOTION_API_TOKEN: $REPLACE_NOTION_API_TOKEN
+          NOTION_EVENTS_DATABASE_ID: $REPLACE_NOTION_EVENTS_DATABASE_ID
+          SLACK_BOT_TOKEN: $REPLACE_SLACK_BOT_TOKEN
+          SLACK_USER_WINTER: $REPLACE_SLACK_USER_WINTER
+          SLACK_USER_SUMMER: $REPLACE_SLACK_USER_SUMMER
+          SLACK_USER_RAV: $REPLACE_SLACK_USER_RAV
+        run: node src/nag-events.js

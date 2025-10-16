@@ -1,13 +1,13 @@
 {
   "name": "notion-calendar-sync",
   "version": "1.0.0",
-  "description": "Sync Notion Events to Google Calendar",
-  "main": "src/sync-calendar.js",
+  "description": "Sync Notion events to Google Calendar with automated nagging",
   "scripts": {
-    "sync": "node src/sync-calendar.js"
+    "sync": "node src/sync-calendar.js",
+    "nag": "node src/nag-events.js"
   },
   "dependencies": {
-    "@notionhq/client": "^2.2.14",
+    "@notionhq/client": "^2.2.15",
     "googleapis": "^128.0.0"
   }
 }
