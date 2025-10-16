@@ -1,6 +1,5 @@
 const { Client } = require('@notionhq/client');
 const { google } = require('googleapis');
-const { JWT } = require('google-auth-library');
 
 const notion = new Client({
   auth: process.env.NOTION_API_TOKEN,
@@ -9,14 +8,13 @@ const notion = new Client({
 const DATABASE_ID = process.env.NOTION_EVENTS_DATABASE_ID;
 const CALENDAR_ID = 'rav@threeleafclover.us';
 
-// Initialize with service account key and domain-wide delegation
-const key = require(process.env.GOOGLE_APPLICATION_CREDENTIALS);
-
-const auth = new JWT({
-  email: key.client_email,
-  key: key.private_key,
-  scopes: ['https://www.googleapis.com/auth/calendar```'],
-  subject: 'rav@threeleafclover.us',
+// Load service account credentials and set up domain-wide delegation
+const auth = new google.auth.GoogleAuth({
+  keyFile: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+  scopes: ['https://www.googleapis.com/auth/calendar'],
+  clientOptions: {
+    subject: 'rav@threeleafclover.us', // Domain-wide delegation - impersonate this user
+  },
 });
 
 const calendar = google.calendar({ version: 'v3', auth });
