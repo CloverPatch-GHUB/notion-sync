@@ -18,7 +18,7 @@ async function shareCalendar() {
   
   try {
     await calendar.acl.insert({
-      calendarId: 'primary',
+      calendarId: 'c_9db0968d06112a987a320dea71da8f2182441f43fc605b714974eb47f6591cbf@group.calendar.google.com',
       requestBody: {
         role: 'reader',
         scope: {
@@ -80,7 +80,7 @@ async function createCalendarEvent(notionPage) {
   };
   
   const calendarResponse = await calendar.events.insert({
-    calendarId: 'primary',
+    calendarId: 'c_9db0968d06112a987a320dea71da8f2182441f43fc605b714974eb47f6591cbf@group.calendar.google.com',
     requestBody: event,
   });
   
