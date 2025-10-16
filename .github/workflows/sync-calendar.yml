@@ -9,30 +9,25 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     
-    permissions:
-      contents: read
-      id-token: write
-    
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
       
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
           node-version: '18'
       
       - name: Install dependencies
         run: npm install
       
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          workload_identity_provider: ${{secrets.GCP_WORKLOAD_IDENTITY_PROVIDER}}
-          service_account: ${{secrets.GCP_SERVICE_ACCOUNT}}
-      
+      - name: Set up service account credentials
+        run: |
+          echo '$ secrets.GCP_SERVICE_ACCOUNT_KEY ' > /tmp/gcp-key.json
+          echo "GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-key.json" >> $GITHUB_ENV
+        
       - name: Run sync
         env:
-          NOTION_API_TOKEN: ${{secrets.NOTION_API_TOKEN}}
-          NOTION_EVENTS_DATABASE_ID: ${{secrets.NOTION_EVENTS_DATABASE_ID}}
+          NOTION_API_TOKEN: $ secrets.NOTION_API_TOKEN 
+          NOTION_EVENTS_DATABASE_ID: $ secrets.NOTION_EVENTS_DATABASE_ID 
         run: npm run sync
