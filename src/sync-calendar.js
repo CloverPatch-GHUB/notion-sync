@@ -59,7 +59,7 @@ async function createCalendarEvent(notionPage) {
   };
   
   const calendarResponse = await calendar.events.insert({
-    calendarId: 'rav@threeleafclover.us',
+    calendarId: 'primary',
     requestBody: event,
   });
   
