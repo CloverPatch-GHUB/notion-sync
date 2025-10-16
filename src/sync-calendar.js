@@ -1,19 +1,41 @@
 const { Client } = require('@notionhq/client');
 const { google } = require('googleapis');
 
-// Initialize Notion client
 const notion = new Client({
   auth: process.env.NOTION_API_TOKEN,
 });
 
 const DATABASE_ID = process.env.NOTION_EVENTS_DATABASE_ID;
 
-// Initialize Google Calendar
 const auth = new google.auth.GoogleAuth({
   scopes: ['https://www.googleapis.com/auth/calendar'],
 });
 
 const calendar = google.calendar({ version: 'v3', auth });
+
+async function shareCalendar() {
+  console.log('Sharing service account calendar with rav@threeleafclover.us...');
+  
+  try {
+    await calendar.acl.insert({
+      calendarId: 'primary',
+      requestBody: {
+        role: 'reader',
+        scope: {
+          type: 'user',
+          value: 'rav@threeleafclover.us',
+        },
+      },
+    });
+    console.log('Calendar shared successfully');
+  } catch (error) {
+    if (error.message.includes('duplicate')) {
+      console.log('Calendar already shared');
+    } else {
+      console.log('Note: Could not share calendar, but will continue');
+    }
+  }
+}
 
 async function queryApprovedEvents() {
   console.log('Querying Notion for Approved events...');
@@ -35,7 +57,6 @@ async function queryApprovedEvents() {
 async function createCalendarEvent(notionPage) {
   const properties = notionPage.properties;
   
-  // Extract event details
   const title = properties['Event Name']?.title[0]?.plain_text || 'Untitled Event';
   const description = properties['Description']?.rich_text[0]?.plain_text || '';
   const location = properties['Location']?.rich_text[0]?.plain_text || '';
@@ -105,6 +126,9 @@ async function updateNotionEvent(pageId, calendarEventId) {
 async function main() {
   try {
     console.log('Starting calendar sync...');
+    
+    // Share calendar first
+    await shareCalendar();
     
     const approvedEvents = await queryApprovedEvents();
     
