@@ -6,7 +6,7 @@ const notion = new Client({
 });
 
 const DATABASE_ID = process.env.NOTION_EVENTS_DATABASE_ID;
-const CALENDAR_ID = 'c_9db0968d06112a987a320dea71da8f2182441f43fc605b714974eb47f6591cbf@group.calendar.google.com';
+const CALENDAR_ID = 'rav@threeleafclover.us';
 
 // Initialize with domain-wide delegation
 const auth = new google.auth.GoogleAuth({
