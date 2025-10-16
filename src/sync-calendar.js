@@ -6,36 +6,17 @@ const notion = new Client({
 });
 
 const DATABASE_ID = process.env.NOTION_EVENTS_DATABASE_ID;
+const CALENDAR_ID = 'c_9db0968d06112a987a320dea71da8f2182441f43fc605b714974eb47f6591cbf@group.calendar.google.com';
 
+// Initialize with domain-wide delegation
 const auth = new google.auth.GoogleAuth({
   scopes: ['https://www.googleapis.com/auth/calendar'],
+  clientOptions: {
+    subject: 'rav@threeleafclover.us', // Impersonate this user
+  },
 });
 
 const calendar = google.calendar({ version: 'v3', auth });
-
-async function shareCalendar() {
-  console.log('Sharing service account calendar with rav@threeleafclover.us...');
-  
-  try {
-    await calendar.acl.insert({
-      calendarId: 'c_9db0968d06112a987a320dea71da8f2182441f43fc605b714974eb47f6591cbf@group.calendar.google.com',
-      requestBody: {
-        role: 'reader',
-        scope: {
-          type: 'user',
-          value: 'rav@threeleafclover.us',
-        },
-      },
-    });
-    console.log('Calendar shared successfully');
-  } catch (error) {
-    if (error.message.includes('duplicate')) {
-      console.log('Calendar already shared');
-    } else {
-      console.log('Note: Could not share calendar, but will continue');
-    }
-  }
-}
 
 async function queryApprovedEvents() {
   console.log('Querying Notion for Approved events...');
@@ -80,7 +61,7 @@ async function createCalendarEvent(notionPage) {
   };
   
   const calendarResponse = await calendar.events.insert({
-    calendarId: 'c_9db0968d06112a987a320dea71da8f2182441f43fc605b714974eb47f6591cbf@group.calendar.google.com',
+    calendarId: CALENDAR_ID,
     requestBody: event,
   });
   
@@ -112,7 +93,7 @@ async function updateNotionEvent(pageId, calendarEventId) {
         rich_text: [
           {
             text: {
-              content: `Synced to Google Calendar on ${new Date().toISOString()}`,
+              content: `Synced to Main Cal on ${new Date().toISOString()}`,
             },
           },
         ],
@@ -125,10 +106,7 @@ async function updateNotionEvent(pageId, calendarEventId) {
 
 async function main() {
   try {
-    console.log('Starting calendar sync...');
-    
-    // Share calendar first
-    await shareCalendar();
+    console.log('Starting calendar sync with domain-wide delegation...');
     
     const approvedEvents = await queryApprovedEvents();
     
