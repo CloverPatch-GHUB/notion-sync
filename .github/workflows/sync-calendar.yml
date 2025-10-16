@@ -33,6 +33,6 @@ jobs:
       
       - name: Run sync
         env:
-          NOTION_API_TOKEN: $223
-          NOTION_EVENTS_DATABASE_ID: $224
+          NOTION_API_TOKEN: $http://user.name/
+          NOTION_EVENTS_DATABASE_ID: $https://github.com
         run: npm run sync
